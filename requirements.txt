@@ -1,0 +1,8 @@
+
+requests
+python-dotenv
+python-twitter
+python-environ
+colored
+pytz
+tabulate
