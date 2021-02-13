@@ -1,7 +1,7 @@
 # Calculate the *current, up to date* VIX vol index on a ticker of your choosing.
 
 ### Author's notes
-I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm about 92% certain the math is correct. 
+I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm about 98% certain the math is correct. 
 
 Be aware that some tickers have issues, I'm not entirely sure why yet. It's either because TD Ameritrade's API isn't always 
 consistent or because some option chains are just too small to run the VIX on (this is my guess). I haven't had the time to look into it, but I will eventually find out why. 
