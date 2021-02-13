@@ -6,3 +6,4 @@ colored
 pytz
 tabulate
 python-dateutil
+beautifulsoup4

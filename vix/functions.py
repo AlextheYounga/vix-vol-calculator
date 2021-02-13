@@ -8,7 +8,7 @@ from pytz import timezone
 import colored
 from colored import stylize
 from dateutil.relativedelta import relativedelta
-from .api.options import *
+from .api.options import getOptionChainTD
 import calendar
 
 
