@@ -66,8 +66,8 @@ TDAMER_KEY=somevalue
 Run ```pip list -r requirements.txt```
 
 
-### Step 4 Do it to it:
-To run the VIX on a ticker:
+### Do it to it:
+To run the VIX on a ticker, cd into the root of the project and run the following command. The file run.py is the controlling file here
 ```
 python run.py vix SPY
 ```
