@@ -45,27 +45,28 @@ python run.py vix GME
 
 ```
 
-### Technical Details:
+## Technical Details:
 
-#### Installing Python, (the right way). If you're a complete beginner, this short 7 minute video will help answer a lot of your initial questions:
+### Installing Python, (the right way). If you're a complete beginner, this short 7 minute video will help answer a lot of your initial questions:
 https://www.youtube.com/watch?v=28eLP22SMTA
 
-#### Step 1 Free TD Ameritrade API Key:
+### Step 1 Free TD Ameritrade API Key:
 Acquire a TD Ameritrade api key. They are free and easy to acquire. Click register, fill out the form, and grab the "Consumer Key" they give you after verifying your account.
 https://developer.tdameritrade.com/authentication/apis
 
-#### Step 2 ENV:
+### Step 2 ENV:
+To the beginner, this is where you will put your sensitive information, (like your API keys).
 Create a file called ```.env``` in the root project folder and place this in it:
 (Check out the .env.example file for help)
 ```
 TDAMER_KEY=somevalue
 ```
 
-#### Step 3 Packages:
+### Step 3 Packages:
 Run ```pip list -r requirements.txt```
 
 
-#### Step 4 Do it to it:
+### Step 4 Do it to it:
 To run the VIX on a ticker:
 ```
 python run.py vix SPY
