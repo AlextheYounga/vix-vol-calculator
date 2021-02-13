@@ -1,4 +1,6 @@
-This will calculate the **current, up to date** VIX vol index on a ticker. I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm about 92% certain the math is correct. 
+<h2>This will calculate the *current, up to date* VIX vol index on a ticker of your choosing.</h2>
+
+I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm about 92% certain the math is correct. 
 
 
 Be aware that some tickers have issues, I'm not entirely sure why yet. It's either because TD Ameritrade's API isn't always 
