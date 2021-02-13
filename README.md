@@ -10,9 +10,10 @@ consistent or because some option chains are just too small to run the VIX on (t
 
 Also, you'll notice the math starts to break down on extremely volatile tickers, for reasons I don't entirely understand yet. I get the impression the CBOE didn't intend to use this on anything but the S&P500. 
 
-In my personal opinion, some of the conceptual logic behind the VIX is somewhat weak. I think their process for which option contracts to use is pretty interesting and makes sense to me, and the standard deviation equation they use is pretty cool. But when it's all said and done, the final VIX calculation that all of these variables get thrown into seems pretty arbitrary to me. It becomes a soup of multiplying/dividing datetimes in such a way that truly only a genius could understand. 
+In my personal opinion, some of the conceptual logic behind the final VIX equation is pretty weak. I think their process for which option contracts to use is pretty interesting and makes sense to me, and the standard deviation equation they use is pretty cool. But when it's all said and done, the final VIX calculation that all of these variables get tossed into feels like it ruins the party. It becomes a soup of multiplying/dividing datetimes in such a way that truly only a genius could understand.
 
-All that being said, it doesn't matter if their logic is correct. All the fintech algorithms use the VIX, making it correct.
+All that being said, it doesn't matter if their logic is correct. All the fintech algorithms use the VIX, making it correct. 
+And I learned a lot making this, and will certainly use parts of CBOE's VIX process in the future.
 
 The math does seem to come to reasonable conclusions on a lot of big name stocks. 
 For example, as of this writing (02-13-2021):
