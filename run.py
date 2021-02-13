@@ -15,7 +15,7 @@ def list_commands():
     print("\n\n")
 
     commands = [
-        ['vix [<ticker>]', 'Runs the VIX volatility equation on a ticker'],
+        ['vix [<ticker>] [--debug]', 'Runs the VIX volatility equation on a ticker'],
     ]
 
     printTabs(commands, headers, 'simple')
