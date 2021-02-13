@@ -23,6 +23,7 @@ python run.py vix SPY
 # VIX: 19.988 
 # Despite using the ETF $SPY, the VIX still mirrors that of the real S&P range because the option prices on SPY and the S&P500
 # are so similar.
+# True VIX close as reported by Google 02-13-2021: 19.97
 
 # Apple
 python run.py vix AAPL
