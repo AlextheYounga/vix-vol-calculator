@@ -31,10 +31,15 @@ python run.py vix AAPL
 
 # VIX: 33.394
 
-# General Motors
-python run.py vix GM
+# Shopify
+python run.py vix SHOP
 
-# VIX: 52.29
+# VIX: 59.713
+
+# Microsoft
+python run.py vix MSFT
+
+# VIX: 26.89
 
 #Now here's where the math starts to break down.
 #Gamestop
@@ -42,6 +47,11 @@ python run.py vix GME
 
 # VIX: 8998.274
 # As of this writing, we're about two weeks out from the historic Gamestop short squeeze. 
+
+#Tesla
+python run.py vix TSLA
+
+# VIX: 27668.515
 
 ```
 
