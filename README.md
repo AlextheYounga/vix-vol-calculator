@@ -15,8 +15,8 @@ In my personal opinion, some of the conceptual logic behind the final VIX equati
 All that being said, it doesn't matter if their logic is correct. All the fintech algorithms use the VIX, making it correct. 
 And I learned a lot making this, and will certainly use parts of CBOE's VIX process in the future.
 
-The math seems to come to reasonable conclusions on a lot of big name stocks. 
-For example, as of this writing (02-13-2021):
+#### The math seems to come to reasonable conclusions on a lot of big name stocks. 
+#### For example, as of this writing (02-13-2021):
 ```
 # SPDR S&P500 ETF Trust
 python run.py vix SPY
