@@ -29,7 +29,7 @@ def collectOptionChain(ticker, debug):
 
     if (debug):
         # Test Data
-        JSON = 'lab/vix/sample_response/response.json'
+        JSON = 'vix/sample_response/response.json'
         with open(JSON) as jsonfile:
             chain = json.loads(jsonfile.read())
             return chain

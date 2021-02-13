@@ -9,8 +9,6 @@ Check out the .env.example file. If you have a Twitter developer account, you ca
 
 
 ```
-DJANGO_SETTINGS_MODULE='lab.settings'
-DJANGO_SETTINGS_MODULE=lab.settings
 IEX_TOKEN=pk_somevalue
 IEX_SANDBOX_TOKEN=Tpk_somevalue
 IEX_URL=https://cloud.iexapis.com/v1/

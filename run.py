@@ -2,7 +2,7 @@ import os
 import sys
 import colored
 from colored import stylize
-from lab.core.output import printTabs
+from vix.output import printTabs
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -70,26 +70,26 @@ def main():
 
     args = [arg.strip() for arg in sys.argv]
 
-    try:
-        if (args[0] == 'list'):
-            list_commands()
-            return
 
-        if (':' in args[0]):
-            command = args.pop(0)
-            program = command.split(':')[0] + "_controller"
-            subroutine = command.split(':')[1]
+    if (args[0] == 'list'):
+        list_commands()
+        return
 
-            globals()[program](subroutine, args)
-            return
-        else:
-            program = args.pop(0) + "_controller"
+    if (':' in args[0]):
+        command = args.pop(0)
+        program = command.split(':')[0] + "_controller"
+        subroutine = command.split(':')[1]
 
-            globals()[program](args)
-            return
-    except:
-        print(stylize("Error: your command did not match any known programs. Closing...", colored.fg("red")))
-        sys.exit()
+        globals()[program](subroutine, args)
+        return
+    else:
+        program = args.pop(0) + "_controller"
+
+        globals()[program](args)
+        return
+
+    print(stylize("Error: your command did not match any known programs. Closing...", colored.fg("red")))
+    sys.exit()
 
 
 if __name__ == '__main__':
