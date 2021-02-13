@@ -74,7 +74,7 @@ python run.py vix SPY
 
 
 
-Run this command to view available commands. Currently there's only one so it shouldn't be hard to remember.
+Run this command to view available run.py commands. Currently there's only one so it shouldn't be hard to remember.
 
 
 ```python run.py list```
