@@ -14,19 +14,15 @@ import calendar
 
 def collectOptionChain(ticker, debug):
     today = datetime.datetime.now()
-    year = today.year
-    month = today.month
-    next_month = (today + relativedelta(months=+1)).month
-    next_month_year = (today + relativedelta(months=+1)).year
-    next_month_end = calendar.monthrange(next_month_year, next_month)[1]
+    three_months_away = (today + relativedelta(months=+3))
+    three_months_away_days = calendar.monthrange(three_months_away.year, three_months_away.month)[1]
 
     # Building a timerange to send to TD Ameritrade's API
     fromDate = today
-    toDate = datetime.datetime(next_month_year, next_month, next_month_end)
+    toDate = datetime.datetime(three_months_away.year, three_months_away.month, three_months_away_days)
     timeRange = [fromDate, toDate]
 
     """ Step 1: Fetch the option chain from TD Ameritrade """
-
     if (debug):
         # Test Data
         JSON = 'vix/sample_response/response.json'
@@ -47,111 +43,114 @@ def selectOptionExpirations(chain):
     """
 
     if (chain):
-        # Just some simple variables we will need.
         today = datetime.datetime.now()
-        year = today.year
-        month = today.month
-        next_month = (today + relativedelta(months=+1)).month
-        next_month_year = (today + relativedelta(months=+1)).year
-        next_month_end = calendar.monthrange(next_month_year, next_month)[1]
 
-        # Our container for collecting our nearest options
-        options = {
-            'nearTerm': {},
-            'nextTerm': {}
-        }
+        # Our container for collecting our near-term/next-term options
+        options = {}
 
-        """ Step 2: Finding this and next month's closest option expiration dates. """
+        """ Step 2: Finding this month's and next month's closest option expiration dates. """
         for optionSide in ['callExpDateMap', 'putExpDateMap']:
-            if (optionSide not in options['nearTerm']):
-                options['nearTerm'][optionSide] = {}
-            if (optionSide not in options['nextTerm']):
-                options['nextTerm'][optionSide] = {}
+            for expir, strikes in chain[optionSide].items():  # Looping each side of the option chain
 
-            for expir, strikes in chain[optionSide].items():
-                expDate = datetime.datetime.strptime(expir.split(':')[0], '%Y-%m-%d')
-                expMonth = expDate.month
-                expYear = expDate.year
+                if (optionSide not in options):
+                    options[optionSide] = {}
 
-                """ Near-Term Options """
-                if ((month == expMonth) and (year == expYear)):
-                    firstStrike = next(iter(strikes.values()))[0]  # Just grabbing the first row of the strikes dict.
-                    daysToExpiration = int(firstStrike['daysToExpiration'])
-                    preciseExpiration = int(firstStrike['expirationDate'])
+                expDate = datetime.datetime.strptime(expir.split(':')[0], '%Y-%m-%d')  # Option expiration date object
+                # Just grabbing the first strike row in the chain because TD has specific information on
+                # this nested level of the dict. I can get the precise expiration from any strike.
+                firstStrike = next(iter(strikes.values()))[0]
+                daysToExpiration = int(firstStrike['daysToExpiration'])
+                preciseExpiration = int(firstStrike['expirationDate'])  # Getting precise expiration
 
-                    # “Near-term” options must have at least one week to expiration; a requirement
-                    # intended to minimize pricing anomalies that might occur close to expiration.
-                    # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
-
-                    if (daysToExpiration > 7):  # Must be at least 7 days from expiration.
-                        options['nearTerm'][optionSide][preciseExpiration] = strikes
-
-                """ Next-Term Options """
-                if ((next_month == expMonth) and (next_month_year == expYear)):
-                    firstStrike = next(iter(strikes.values()))[0]  # Just grabbing the first row of the strikes dict.
-                    daysToExpiration = int(firstStrike['daysToExpiration'])
-                    preciseExpiration = int(firstStrike['expirationDate'])
-
-                    if (daysToExpiration >= 30):  # Generally around or more than 30 days to expiration.
-
-                        options['nextTerm'][optionSide][preciseExpiration] = strikes
+                if (daysToExpiration > 7):  # Must be at least 7 days from expiration.
+                    options[optionSide][preciseExpiration] = {
+                        'dateInfo': {
+                            'expDate': expDate,
+                            'month': expDate.month,
+                            'preciseExpiration': preciseExpiration,
+                            'daysToExpiration': daysToExpiration,
+                        },
+                        'strikes': strikes
+                    }
 
         """
         Step 3: Calculating the nearest option of each group of options, 
         finding min() value of each group's keys, which again, are the time to expiration in seconds.
         """
 
-        try:
-            selectedChain = {
-                # Grabbing the nearest calls, will use these expirations to find associated put options.
-                'nearTerm': {
-                    'call': options['nearTerm']['callExpDateMap'][min(options['nearTerm']['callExpDateMap'].keys())],
-                },
-                'nextTerm': {
-                    'call': options['nextTerm']['callExpDateMap'][min(options['nextTerm']['callExpDateMap'].keys())],
-                },
-            }
+        def vixExpirationRules(options):
+            """
+            For SPX, the VIX specifies that the next-term options can be no longer than 2 months away. This doesn't
+            work for all stocks, because not all stocks have option expirations each month. This caused me some trouble
+            when I originall built this, so I have extended the max time period outwards to 3 months. This equation likely
+            won't be very useful for anything farther in the future. This technique still works fine for SPX. 
+            """
+            this_month = today.month
+            next_month = (today + relativedelta(months=+1))
+            two_months_away = (today + relativedelta(months=+2))
+            three_months_away = (today + relativedelta(months=+3))
 
-            selectedDates = {
-                # Creating a separate dict to store some crucial date variables.
-                'nearTerm': {
-                    'preciseExpiration': next(iter(selectedChain['nearTerm']['call'].values()))[0]['expirationDate'],
-                },
-                'nextTerm': {
-                    'preciseExpiration': next(iter(selectedChain['nextTerm']['call'].values()))[0]['expirationDate']
-                }
-            }
-        except ValueError:
-            print(stylize("Unexpected response from TD:", colored.fg("red")))
-            print(
-            """
-            It seems there was some unexpected data returned from TD Ameritrade. Generally this only happens with penny
-            stocks or stocks with little option volume. I am still working to account for these discrepencies in 
-            TD Ameritrade's response; believe me, I would like to see vix data on some of the smaller stocks as much as you.
-            """
-            )
+            month_0 = []
+            month_1 = []
+            month_2 = []
+            month_3 = []
+            for side, option in options.items():
+                for exp, data in option.items():
+                    if (data['dateInfo']['month'] == this_month):
+                        month_0.append(exp)
+                    if (data['dateInfo']['month'] == next_month.month):
+                        month_1.append(exp)
+                    if (data['dateInfo']['month'] == two_months_away.month):
+                        month_3.append(exp)
+                    if (data['dateInfo']['month'] == three_months_away.month):
+                        month_3.append(exp)
+
+            if (len(month_0) != 0):
+                nearTermExp = min(month_0)
+                flat_list = [item for sublist in [month_1, month_2, month_3] for item in sublist]
+                if (len(flat_list) > 0):
+                    nextTermExp = min(flat_list)
+                    return {'nearTerm': nearTermExp, 'nextTerm': nextTermExp}
+            if (len(month_1) != 0):
+                nearTermExp = min(month_1)
+                flat_list = [item for sublist in [month_2, month_3] for item in sublist]
+                if (len(flat_list) > 0):
+                    nextTermExp = min(flat_list)
+                    return {'nearTerm': nearTermExp, 'nextTerm': nextTermExp}
+            if (len(month_2) != 0):
+                nearTermExp = min(month_2)
+                if (len(month_3) > 0):
+                    nextTermExp = min(month_3)
+                    return {'nearTerm': nearTermExp, 'nextTerm': nextTermExp}
+
+            # If not enough option data, end program. We can go no further.
+            print(stylize("Not enough option data for ticker to make a useful measurement.", colored.fg("red")))
             sys.exit()
 
+        properExpir = vixExpirationRules(options)
 
-        # Date manipulation, doing here because we'll need these later.
-        for term, d in selectedDates.items():
-            t = d['preciseExpiration']
-            dateT = datetime.datetime.fromtimestamp(float(t / 1000))  # Windows workaround
-            # The previous division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice
-            # with timestamps in miliseconds.
-            dateObj = timezone('US/Central').localize(dateT)  # Converting to timezone
-            dateStr = dateObj.strftime('%Y-%m-%d')
+        selectedChain = {}
+        for term in ['nearTerm', 'nextTerm']:
+            # Selecting the proper calls and puts from option dictionary.
+            selectedChain[term] = {
+                'call': options['callExpDateMap'][properExpir[term]],
+                'put': options['putExpDateMap'][properExpir[term]],
+            }
 
-            selectedDates[term]['dateObj'] = dateObj
-            selectedDates[term]['dateStr'] = dateStr
+        # Date timezone manipulation; doing here because we'll need these later.
+        for term, side in selectedChain.items():
+            for k, data in side.items():
+                t = data['dateInfo']['preciseExpiration']
+                dateT = datetime.datetime.fromtimestamp(float(t / 1000))  # Windows workaround
+                # The previous division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice
+                # with timestamps in miliseconds.
+                dateObj = timezone('US/Central').localize(dateT)  # Converting to timezone
+                dateStr = dateObj.strftime('%Y-%m-%d')
 
-        # Finding associated put options from call expirations; making sure we have both the call and put options for the same
-        # expiration date.
-        for term, call in selectedChain.items():
-            key = next(iter(selectedChain[term]['call'].values()))[0]['expirationDate']  # Grabbing expiration date from call
-            selectedChain[term]['put'] = options[term]['putExpDateMap'][key]
+                selectedChain[term][k]['dateInfo']['dateTzObj'] = dateObj
+                selectedChain[term][k]['dateInfo']['dateStr'] = dateStr
 
-        return selectedDates, selectedChain
+        return selectedChain
 
 
 def calculateForwardLevel(selectedChain):
@@ -174,7 +173,7 @@ def calculateForwardLevel(selectedChain):
     # Collecting prices on call and put options with strike price as key.
     for term, options in selectedChain.items():
         for side, option in options.items():
-            for strike, details in option.items():
+            for strike, details in option['strikes'].items():
 
                 if (not strikes[term].get(strike, False)):
                     strikes[term][strike] = []
@@ -197,23 +196,28 @@ def calculateForwardLevel(selectedChain):
 
     forwardLevel = {
         'nearTerm': [
-            selectedChain['nearTerm']['call'][nearTermStrike][0],
-            selectedChain['nearTerm']['put'][nearTermStrike][0],
+            selectedChain['nearTerm']['call']['strikes'][nearTermStrike][0],
+            selectedChain['nearTerm']['put']['strikes'][nearTermStrike][0],
         ],
         'nextTerm': [
-            selectedChain['nextTerm']['call'][nextTermStrike][0],
-            selectedChain['nextTerm']['put'][nextTermStrike][0],
+            selectedChain['nextTerm']['call']['strikes'][nextTermStrike][0],
+            selectedChain['nextTerm']['put']['strikes'][nextTermStrike][0],
         ]
     }
 
     return forwardLevel
 
 
-def calculateT(selectedDates):
+def calculateT(selectedChain):
     """
     T = {MCurrent day + MSettlement day + MOther days}/ Minutes in a year 
     https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
     """
+    # Fetching dates from selectedChain
+    selectedDates = {
+        'nearTerm': selectedChain['nearTerm']['call']['dateInfo'],
+        'nextTerm': selectedChain['nextTerm']['call']['dateInfo']
+    }
 
     # Some variables we will need
     now = timezone('US/Central').localize(datetime.datetime.now())
@@ -225,8 +229,8 @@ def calculateT(selectedDates):
     t = {}
     tminutes = {}
 
-    for term, date in selectedDates.items():
-        timeDiff = abs(date['dateObj'] - now).total_seconds()  # Calculating diff in seconds
+    for term, dateInfo in selectedDates.items():
+        timeDiff = abs(dateInfo['dateTzObj'] - now).total_seconds()  # Calculating diff in seconds
         minutesToExpire = (timeDiff / 60)  # MOther days
         tminutes[term] = minutesToExpire
         t[term] = (minutesToMidnight + mSettlementDay + minutesToExpire) / minutesYear  # T equation
@@ -266,7 +270,7 @@ def calculateVol(f, t, r, selectedChain):
 
             for side, option in options.items():
                 ks[side] = {}
-                for strike, details in option.items():
+                for strike, details in option['strikes'].items():
 
                     # Collecting bids and asks to be used in determining 'ki'
                     bid = details[0]['bid']

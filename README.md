@@ -1,25 +1,11 @@
 # Calculate the *current, up to date* VIX vol index on a ticker of your choosing.
 
-## There's currently a time-based bug that I didn't anticipate when building this. Should have this bug fixed soon. 
-
-
 ### Author's notes
 I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm about 98% certain the math is correct. 
 
-Be aware that some tickers have issues, I'm not entirely sure why yet. It's either because TD Ameritrade's API isn't always 
-consistent or because some option chains are just too small to run the VIX on (this is my guess). I haven't had the time to look into it, but I will eventually find out why. 
+You'll notice the math starts to break down on extremely volatile tickers. I get the impression the CBOE didn't intend to use this on anything but the S&P500. The VIX is supposed to suggest where the SPX will be a month from now, and for SPX, the math works. For example, if the VIX is at 28, that suggests that SPX will be up or down 28 points within 30 days. But if the stock's option prices are absurd, such as using GME (in February 2021), it's possible to see ouput greater than 500.
 
-**Generally speaking, penny stocks don't work yet.**
-
-Also, you'll notice the math starts to break down on extremely volatile tickers, for reasons I don't entirely understand yet. I get the impression the CBOE didn't intend to use this on anything but the S&P500. 
-
-In my personal opinion, some of the conceptual logic behind the final VIX equation is pretty weak. I think their process for which option contracts to use is pretty interesting and makes sense to me, and the standard deviation equation they use is pretty cool. But when it's all said and done, the final VIX calculation that all of these variables get tossed into feels like it ruins the party. It becomes a soup of multiplying/dividing datetimes in such a way that truly only a genius could understand.
-
-All that being said, it doesn't matter if their logic is correct. All the fintech algorithms use the VIX, making it correct. 
-And I learned a lot making this, and will certainly use parts of CBOE's VIX process in the future.
-
-#### The math seems to come to reasonable conclusions on a lot of big name stocks. 
-#### For example, as of this writing (02-13-2021):
+#### Examples; as of this writing (02-13-2021):
 ```
 # SPDR S&P500 ETF Trust
 python run.py vix SPY
@@ -43,18 +29,6 @@ python run.py vix SHOP
 python run.py vix MSFT
 
 # VIX: 26.89
-
-#Now here's where the math starts to break down.
-#Gamestop
-python run.py vix GME
-
-# VIX: 8998.274
-# As of this writing, we're about two weeks out from the historic Gamestop short squeeze. 
-
-#Tesla
-python run.py vix TSLA
-
-# VIX: 27668.515
 
 ```
 

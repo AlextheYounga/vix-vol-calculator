@@ -35,7 +35,6 @@ def getOptionChainTD(ticker, timeRange):
     fromDate, toDate = formatDate(timeRange)
     domain = 'api.tdameritrade.com/v1/marketdata'
     key = os.environ.get("TDAMER_KEY")
-
     headers = {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML'
     }        
