@@ -1,31 +1,31 @@
-import json
 import math
-import statistics
-import sys
-from .scrape.bonds import scrape3mTreasury
-from .functions import *
+from vix.http.fred import Fred
+from vix.http.td_ameritrade import TDAmeritrade
+from vix.options.options import Options
+from vix.options.expirations import Expirations
+from vix.math.calculate_forward_level import calculate_forward_level
+from vix.math.calculate_t import calculate_t
+from vix.math.calculate_f import calculate_f
+from vix.math.calculate_volatility import calculate_vol
 
 
-def vix_explanation():
-    """
-    I have followed the official VIX whitepaper to the best of my ability in the making of this program.
-    This program uses the TD Ameritrade API to fetch the entire option chain, and the IEX Cloud API to fetch the
-    3M Treasury Bond yield, (the risk-free interest rate).
+"""
+I have followed the official VIX whitepaper to the best of my ability in the making of this program.
+This program uses the TD Ameritrade API to fetch the entire option chain, and fetches the latest
+3M Treasury Bond yield (the risk-free interest rate) from the FRED website (https://fred.stlouisfed.org/series/DTB3).
 
-    I have attempted to document the process as best as I can. 
-    https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
-    """
+I have attempted to document the process as best as I can. 
+https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
+"""
 
 
-def vix_equation(ticker, debug=False):
+def vix_equation(ticker):
     """
     Runs the VIX equation on a ticker.
 
     Parameters
     ----------
     ticker      :string
-    sandbox     :bool
-                Sets the IEX environment to sandbox mode to make limitless API calls for testing.
 
     Returns
     -------
@@ -33,13 +33,14 @@ def vix_equation(ticker, debug=False):
     """
 
     # Step 1: Fetch the option chain for the ticker.
-    chain = collectOptionChain(ticker, debug)
+    time_range = Options().build_option_chain_time_range()
+    chain = TDAmeritrade().get_option_chain(ticker, time_range)
 
     # Step 2
     # Find the proper "near-term" and "next-term" option expirations to be used to find Forward Level.
-    # See selectOptionExpirations() in functions.py.
+    # See find_next_two_months_expirations() in functions.py.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 4)
-    selectedChain = selectOptionExpirations(chain)
+    selected_chain = Expirations().find_option_terms(chain)
 
     # Step 3
     # Calculate R
@@ -47,24 +48,24 @@ def vix_equation(ticker, debug=False):
     # closest to the expiration dates of relevant SPX options. As such, the VIX calculation may
     # use different risk-free interest rates for near- and next-term options.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 4)
-    r = scrape3mTreasury()
+    r = Fred().scrape_3m_treasury()
 
     # Step 4
     # Calculate T1 and T2, for near-term and next-term options respectively. See calculateT() in functions.py for more.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 4)
-    t, tminutes = calculateT(selectedChain)
+    t, tminutes = calculate_t(selected_chain)
 
     # Step 5
     # Determine the forward SPX level, F, by identifying the strike price at which the
     # absolute difference between the call and put prices is smallest
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 5)
-    forwardLevel = calculateForwardLevel(selectedChain)
+    forward_level = calculate_forward_level(selected_chain)
 
     # Step 6
     # Calculate F, where F is the: "forward SPX {but in our case, any ticker} level, by identifying the strike price at which the
     # absolute difference between the call and put prices is smallest."
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 5)
-    f = calculateF(t, r, forwardLevel)
+    f = calculate_f(t, r, forward_level)
 
     # Step 7
     # Calculate Vol
@@ -73,7 +74,7 @@ def vix_equation(ticker, debug=False):
     # I decided it would take far more code to break up this function into multiple parts rather than to simply
     # finish it in one loop.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 6 - 9)
-    vol = calculateVol(f, t, r, selectedChain)
+    vol = calculate_vol(f, t, r, selected_chain)
 
     # Step 8
     # Calculate VIX
@@ -86,17 +87,6 @@ def vix_equation(ticker, debug=False):
     t2 = t['nextTerm']
     nT1 = tminutes['nearTerm']  # Minutes to expiration
     nT2 = tminutes['nextTerm']  # Minutes to expiration
-
-    # if (debug):
-    # print('Minutes Year = '+str(minYear))
-    # print('Minutes in Month = '+str(minMonth))
-    # print('Near-Term Vol (v1) = '+str(v1))
-    # print('Next-Term Vol (v2) = '+str(v2))
-    # print('T1 = '+str(t1))
-    # print('T2 = '+str(t2))
-    # print('Near-Term Expiration Minutes = '+str(nT1))
-    # print('Next-Term Expiration Minutes = '+str(nT2))
-    # print("\n")
 
 
     # Test Data to confirm accuracy

@@ -1,4 +1,3 @@
-import os
 import sys
 import colored
 from colored import stylize
@@ -55,12 +54,6 @@ def vix_controller(args):
     from vix.equation import vix_equation
 
     ticker = args[0]
-
-    if (len(args) >= 2):
-        debug = True if (args[1] == '--debug') else False
-        print(vix_equation(ticker, debug))
-        return
-
     print('VIX: '+str(vix_equation(ticker)))
 
 

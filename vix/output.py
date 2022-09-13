@@ -1,7 +1,4 @@
 from tabulate import tabulate
-import sys
-import csv
-import os
 
 def printTabs(data, headers=[], tablefmt='simple'):
     """ 

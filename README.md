@@ -50,7 +50,7 @@ TDAMER_KEY=somevalue
 ```
 
 ### Step 3 Packages:
-Run ```pip list -r requirements.txt```
+Run ```pip install -r requirements.txt```
 
 
 ### Do it to it:
@@ -58,17 +58,3 @@ To run the VIX on a ticker, cd into the root of the project and run the followin
 ```
 python run.py vix SPY
 ```
-
-
-
-Run this command to view available run.py commands. Currently there's only one so it shouldn't be hard to remember.
-
-
-```python run.py list```
-
-```
-Command                   Description
-------------------------  --------------------------------------------
-vix [<ticker>] [--debug]  Runs the VIX volatility equation on a ticker
-```
-
