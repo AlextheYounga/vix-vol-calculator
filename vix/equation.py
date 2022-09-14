@@ -1,12 +1,12 @@
 import math
 from vix.http.fred import Fred
 from vix.http.td_ameritrade import TDAmeritrade
-from vix.options.options import Options
+from vix.options.options import build_option_chain_time_range
 from vix.options.expirations import Expirations
 from vix.math.calculate_forward_level import calculate_forward_level
 from vix.math.calculate_t import calculate_t
 from vix.math.calculate_f import calculate_f
-from vix.math.calculate_volatility import calculate_vol
+from vix.volatility import Volatility
 
 
 """
@@ -19,7 +19,7 @@ https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwh
 """
 
 
-def vix_equation(ticker):
+def run_vix_equation(ticker):
     """
     Runs the VIX equation on a ticker.
 
@@ -33,7 +33,7 @@ def vix_equation(ticker):
     """
 
     # Step 1: Fetch the option chain for the ticker.
-    time_range = Options().build_option_chain_time_range()
+    time_range = build_option_chain_time_range()
     chain = TDAmeritrade().get_option_chain(ticker, time_range)
 
     # Step 2
@@ -74,7 +74,7 @@ def vix_equation(ticker):
     # I decided it would take far more code to break up this function into multiple parts rather than to simply
     # finish it in one loop.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 6 - 9)
-    vol = calculate_vol(f, t, r, selected_chain)
+    vol = Volatility().calculate(f, t, r, selected_chain)
 
     # Step 8
     # Calculate VIX

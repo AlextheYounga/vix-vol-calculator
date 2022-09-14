@@ -7,12 +7,12 @@ import sys
 
 class Expirations:
     def find_option_terms(self, chain):
-        option_terms = self.find_next_two_months_expirations(chain)
-        selected_chain = self.calculate_nearest_option_of_option_groups(option_terms)
+        option_terms = self.__find_next_two_months_expirations(chain)
+        selected_chain = self.__calculate_nearest_option_of_option_groups(option_terms)
 
         return selected_chain
 
-    def find_next_two_months_expirations(self, chain):
+    def __find_next_two_months_expirations(self, chain):
         """
         Finds this month's expiration and next months expiration (the near-term and next-term expirations).
         Calculates and returns a dict containing the near-term and next-term expiration dates, along with the
@@ -39,9 +39,9 @@ class Expirations:
                     if (daysToExpiration > 7):  # Must be at least 7 days from expiration.
                         option_terms[option_side][precise_expiration] = {
                             'dateInfo': {
-                                'expiration_date': expiration_date,
+                                'expirationDate': expiration_date,
                                 'month': expiration_date.month,
-                                'precise_expiration': precise_expiration,
+                                'preciseExpiration': precise_expiration,
                                 'daysToExpiration': daysToExpiration,
                             },
                             'strikes': strikes
@@ -49,12 +49,12 @@ class Expirations:
 
             return option_terms
 
-    def calculate_nearest_option_of_option_groups(self, option_terms):
+    def __calculate_nearest_option_of_option_groups(self, option_terms):
         """
         Calculating the nearest option of each group of options, 
         finding min() value of each group's keys, which are the time to expiration in seconds.
         """
-        proper_expiration = self.vix_expiration_rules(option_terms)
+        proper_expiration = self.__vix_expiration_rules(option_terms)
 
         selected_chain = {}
         for term in ['nearTerm', 'nextTerm']:
@@ -79,7 +79,7 @@ class Expirations:
 
         return selected_chain
     
-    def vix_expiration_rules(self, option_terms):
+    def __vix_expiration_rules(self, option_terms):
         """
         For SPX, the VIX specifies that the next-term options can be no longer than *2 months away. This time range doesn't
         work for all stocks, because not all stocks have option expirations each month. Some have expirations every 3 months, some every 6 months. 
