@@ -3,7 +3,11 @@
 ### Author's notes
 I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm about 98% certain the math is correct. 
 
-You'll notice the math starts to break down on extremely volatile tickers. I get the impression the CBOE didn't intend to use this on anything but the S&P500. The VIX is supposed to suggest where the SPX will be a month from now, and for SPX, the math works. For example, if the VIX is at 28, that suggests that SPX will be up or down 28 points within 30 days. But if the stock's option prices are absurd, such as using GME (in February 2021), it's possible to see ouput greater than 500.
+You'll notice the math starts to break down on extremely volatile tickers. I get the impression the CBOE didn't intend to use this on anything but the S&P500. The VIX is supposed to suggest a possible range of where the SPX will be a month from now, i.e., if the VIX is at 28, that suggests that SPX will be up or down 28 points within 30 days. 
+
+For the S&P it's surprisingly accurate. But if a stock's option prices are absurd, (such as $GME in February 2021), it's possible to see ouput greater than 500.
+
+One caveat is that this equation will only work if the stock has an option contract that expires within the next 3 months. Lower volume stocks may only have a few expirations per year, or every 6 months. If that's the case, the code will fail, because the VIX equation was never designed to calculate that far out. 
 
 #### Examples; as of this writing (02-13-2021):
 ```
