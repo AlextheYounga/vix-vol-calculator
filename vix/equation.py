@@ -1,13 +1,10 @@
 import math
-from vix.http.fred import Fred
+from vix.http.fred import scrape_3m_treasury_from_fred
 from vix.http.td_ameritrade import TDAmeritrade
 from vix.options.options import build_option_chain_time_range
 from vix.options.expirations import Expirations
-from vix.math.calculate_forward_level import calculate_forward_level
-from vix.math.calculate_t import calculate_t
-from vix.math.calculate_f import calculate_f
+from vix.math import *
 from vix.volatility import Volatility
-
 
 """
 I have followed the official VIX whitepaper to the best of my ability in the making of this program.
@@ -48,7 +45,7 @@ def run_vix_equation(ticker):
     # closest to the expiration dates of relevant SPX options. As such, the VIX calculation may
     # use different risk-free interest rates for near- and next-term options.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 4)
-    r = Fred().scrape_3m_treasury()
+    r = scrape_3m_treasury_from_fred()
 
     # Step 4
     # Calculate T1 and T2, for near-term and next-term options respectively. See calculateT() in functions.py for more.
