@@ -10,31 +10,32 @@ For the S&P it's surprisingly accurate. But if a stock's option prices are absur
 #### Caveat
 This equation will only work if the stock has an option contract that expires within the next 3 months. Lower volume stocks may only have a few expirations per year, or every 6 months. If that's the case, the code will fail, because the VIX equation was never designed to calculate more than a month ahead. I tweaked the equation to allow for up to 3 months. 
 
-#### Examples; as of this writing (02-13-2021):
+### Examples; as of this writing (02-13-2021):
+#### SPDR S&P500 ETF Trust
 ```
-# SPDR S&P500 ETF Trust
 python run.py vix SPY
+=> VIX: 19.988 
+```
+**True VIX close as reported by Google 02-13-2021**: 19.97\
+Despite using the ETF $SPY, the VIX still mirrors that of the real S&P range because the option prices on SPY and the S&P500 are so similar. 
 
-# VIX: 19.988 
-# Despite using the ETF $SPY, the VIX still mirrors that of the real S&P range 
-# because the option prices on SPY and the S&P500 are so similar.
-# True VIX close as reported by Google 02-13-2021: 19.97
 
-# Apple
+#### Apple
+```
 python run.py vix AAPL
+=> VIX: 33.394
+```
 
-# VIX: 33.394
-
-# Shopify
+#### Shopify
+```
 python run.py vix SHOP
+=> VIX: 59.713
+```
 
-# VIX: 59.713
-
-# Microsoft
+#### Microsoft
+```
 python run.py vix MSFT
-
-# VIX: 26.89
-
+=> VIX: 26.89
 ```
 
 ## Technical Details:
