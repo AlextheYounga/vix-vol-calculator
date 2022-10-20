@@ -7,7 +7,8 @@ You'll notice the math starts to break down on extremely volatile tickers. I get
 
 For the S&P it's surprisingly accurate. But if a stock's option prices are absurd, (such as $GME in February 2021), it's possible to see ouput greater than 500.
 
-One caveat is that this equation will only work if the stock has an option contract that expires within the next 3 months. Lower volume stocks may only have a few expirations per year, or every 6 months. If that's the case, the code will fail, because the VIX equation was never designed to calculate that far out. 
+#### Caveat
+This equation will only work if the stock has an option contract that expires within the next 3 months. Lower volume stocks may only have a few expirations per year, or every 6 months. If that's the case, the code will fail, because the VIX equation was never designed to calculate more than a month ahead. I tweaked the equation to allow for up to 3 months. 
 
 #### Examples; as of this writing (02-13-2021):
 ```
