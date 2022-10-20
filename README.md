@@ -1,4 +1,4 @@
-# Calculate the *current, up to date* VIX vol index on a ticker of your choosing.
+# Calculate the *current* VIX vol index on any ticker of your choosing.
 
 ### Author's notes
 I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm about 98% certain the math is correct. 
