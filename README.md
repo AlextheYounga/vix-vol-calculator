@@ -11,7 +11,7 @@ For the S&P it's surprisingly accurate. But if a stock's option prices are absur
 This equation will only work if the stock has an option contract that expires within the next 3 months. Lower volume stocks may only have a few expirations per year, or every 6 months. If that's the case, the code will fail, because the VIX equation was never designed to calculate more than a month ahead. I tweaked the equation to allow for up to 3 months. 
 
 ### Examples; as of this writing (02-13-2021):
-#### SPDR S&P500 ETF Trust
+#### SPDR S&P500 ETF Trust (SPY)
 ```
 python run.py vix SPY
 => VIX: 19.988 
