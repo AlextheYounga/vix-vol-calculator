@@ -60,7 +60,7 @@ Run ```pip install -r requirements.txt```
 
 
 ### Do it to it:
-To run the VIX on a ticker, cd into the root of the project and run the following command. The file run.py is the controlling file here
+To run the VIX on a ticker, cd into the root of the project and run the following command. The file run.py is the CLI file here
 ```
 python run.py vix SPY
 ```
