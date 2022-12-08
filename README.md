@@ -1,5 +1,7 @@
 # Calculate the *current* VIX vol index on any ticker of your choosing.
 
+![Screenshot 2022-12-08 at 4 45 50 PM](https://user-images.githubusercontent.com/20220366/206574035-3b5ab371-cede-4d21-afb1-c7f69676adc2.png)
+
 ### Author's notes
 I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm about 98% certain the math is correct. 
 
