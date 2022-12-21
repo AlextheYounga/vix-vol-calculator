@@ -3,7 +3,7 @@
 ![Screenshot 2022-12-08 at 4 45 50 PM](https://user-images.githubusercontent.com/20220366/206574035-3b5ab371-cede-4d21-afb1-c7f69676adc2.png)
 
 ### Author's notes
-I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm about 98% certain the math is correct. 
+I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm 99% certain the math is correct. 
 
 You'll notice the math starts to break down on extremely volatile tickers. I get the impression the CBOE didn't intend to use this on anything but the S&P500. The VIX is supposed to suggest a possible range of where the SPX will be a month from now, i.e., if the VIX is at 28, that suggests that SPX will be up or down 28 points within 30 days. 
 
