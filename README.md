@@ -1,39 +1,47 @@
-# Calculate the *current, up to date* VIX vol index on a ticker of your choosing.
+# Calculate the *current* VIX vol index on any ticker of your choosing.
+
+![Screenshot 2022-12-08 at 4 45 50 PM](https://user-images.githubusercontent.com/20220366/206574035-3b5ab371-cede-4d21-afb1-c7f69676adc2.png)
 
 ### Author's notes
-I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm about 98% certain the math is correct. 
+I followed the VIX whitepaper to the letter and attempted to explain the process throughout the code. The VIX whitepaper is not necessarily the easiest thing to follow, but I'm 99% certain the math is correct. 
 
-You'll notice the math starts to break down on extremely volatile tickers. I get the impression the CBOE didn't intend to use this on anything but the S&P500. The VIX is supposed to suggest a possible range of where the SPX will be a month from now, i.e., if the VIX is at 28, that suggests that SPX will be up or down 28 points within 30 days. 
+You'll notice the math starts to break down on extremely volatile tickers. I get the impression the CBOE didn't intend to use this on anything but the S&P500. However, for stocks with average volatility, you get surprisingly accurate results using this equation.
+
+The VIX is supposed to suggest a possible range of where the SPX will be a month from now, i.e., if the VIX is at 28, that suggests that SPX will be up or down 28 points within 30 days. 
 
 For the S&P it's surprisingly accurate. But if a stock's option prices are absurd, (such as $GME in February 2021), it's possible to see ouput greater than 500.
 
-One caveat is that this equation will only work if the stock has an option contract that expires within the next 3 months. Lower volume stocks may only have a few expirations per year, or every 6 months. If that's the case, the code will fail, because the VIX equation was never designed to calculate that far out. 
+### Caveat
+This equation will only work if the stock has an option contract that expires within the next 3 months. Lower volume stocks may only have a few expirations per year, or every 6 months. If that's the case, the code will fail, because the VIX equation was never designed to calculate more than a month ahead. I tweaked the equation to allow for up to 3 months. 
 
-#### Examples; as of this writing (02-13-2021):
+## Examples; as of this writing (02-13-2021):
+### VIX Close 02-13-2021: 19.97
+
+#### SPDR S&P500 ETF Trust (SPY)
 ```
-# SPDR S&P500 ETF Trust
 python run.py vix SPY
+=> VIX: 19.988 
+```
+Despite using the ETF $SPY, the VIX still mirrors that of the real S&P VIX value because the option prices on SPY and the S&P500 are so similar. 
 
-# VIX: 19.988 
-# Despite using the ETF $SPY, the VIX still mirrors that of the real S&P range 
-# because the option prices on SPY and the S&P500 are so similar.
-# True VIX close as reported by Google 02-13-2021: 19.97
+## Examples on Alternative Stocks
 
-# Apple
+#### Apple
+```
 python run.py vix AAPL
+=> VIX: 33.394
+```
 
-# VIX: 33.394
-
-# Shopify
+#### Shopify
+```
 python run.py vix SHOP
+=> VIX: 59.713
+```
 
-# VIX: 59.713
-
-# Microsoft
+#### Microsoft
+```
 python run.py vix MSFT
-
-# VIX: 26.89
-
+=> VIX: 26.89
 ```
 
 ## Technical Details:
@@ -58,7 +66,7 @@ Run ```pip install -r requirements.txt```
 
 
 ### Do it to it:
-To run the VIX on a ticker, cd into the root of the project and run the following command. The file run.py is the controlling file here
+To run the VIX on a ticker, cd into the root of the project and run the following command. The file run.py is the CLI file here
 ```
 python run.py vix SPY
 ```
