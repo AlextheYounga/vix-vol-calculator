@@ -7,3 +7,4 @@ pytz
 tabulate
 python-dateutil
 beautifulsoup4
+pytest

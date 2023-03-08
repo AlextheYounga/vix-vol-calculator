@@ -1,15 +1,19 @@
 from math import e
 
 class Volatility:
-    def calculate(self, f, t, r, selected_chain):
+    def calculate(self, f: dict, t: dict, r: float, selected_chain: dict) -> dict:
         """
-        Meat and potatoes of this file.
+        f = forward level
+        t = time to expiration
+        r = risk free rate
+        selected_chain = selected option chain
         """
 
         vol = {}
         for term, options in selected_chain.items():
+            min_forward_level = float(int(f[term]))
+            k0, ks = self.__calculateK0(options, min_forward_level)
 
-            k0, ks = self.__calculateK0(options, f[term])
             bounds = self.__calculate_bounds(k0, ks)
 
             # Collecting put/call averages
@@ -33,6 +37,28 @@ class Volatility:
             vol[term] = v
 
         return vol
+
+    def __calculateK0(self, options: dict, min_forward_level: float) -> tuple[str, dict]:
+        ks = {}  # As in many k's. A collection of k's, (contracts within VIX parameters)
+
+        for side, option in options.items():
+            ks[side] = {}
+            for strike, details in option['strikes'].items():
+                
+                # Collecting bids and asks to be used in determining 'ki'
+                bid = details[0]['bid']
+                ask = details[0]['ask']
+                ks[side][strike] = {
+                    'bid': bid,
+                    'ask': ask,
+                    'midquote': (bid + ask) / 2
+                }
+
+                # Collecting k0
+                # The first strike below the forward index level, F
+                if (float(strike) <= min_forward_level):
+                    k0 = strike
+        return k0, ks
 
     def __calculate_bounds(self, k0, ks):
         """
@@ -69,7 +95,6 @@ class Volatility:
 
         return bounds
 
-
     def __build_vix_chain(self, bounds, k0, ks, put_call_avg):
         """
         Building a new chain excluding all contracts outside of the bounds above.
@@ -98,31 +123,6 @@ class Volatility:
                 vix_chain.append(ki)
 
         return vix_chain
-
-
-    def __calculateK0(self, options, f):
-        ks = {}  # As in many k's. A collection of k's, (contracts within VIX parameters)
-
-        for side, option in options.items():
-            ks[side] = {}
-            for strike, details in option['strikes'].items():
-
-                # Collecting bids and asks to be used in determining 'ki'
-                bid = details[0]['bid']
-                ask = details[0]['ask']
-                ks[side][strike] = {
-                    'bid': bid,
-                    'ask': ask,
-                    'midquote': (bid + ask) / 2
-                }
-
-                # Collecting k0
-                # The first strike below the forward index level, F
-                min_forward_level = float(int(f))
-                if (float(strike) <= min_forward_level):
-                    k0 = strike
-        return k0, ks
-
 
     def __calculate_strike_contributions(self, r, t, vix_chain):
         """
@@ -155,4 +155,3 @@ class Volatility:
             contributions.append(kc)
 
         return contributions
-

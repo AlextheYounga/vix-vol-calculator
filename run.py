@@ -8,7 +8,7 @@ load_dotenv()
 # It's probably too complex for a project with only one command but it works.
 
 def vix_controller(args):
-    from vix.equation import run_vix_equation
+    from vix.vix import run_vix_equation
 
     ticker = args[0]
     print('VIX: '+str(run_vix_equation(ticker)))

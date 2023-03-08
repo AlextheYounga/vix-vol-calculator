@@ -2,7 +2,7 @@ import datetime
 import calendar
 from dateutil.relativedelta import relativedelta
 
-def build_option_chain_time_range():
+def build_option_chain_time_range() -> list:
     # Building a time_range to send to TD Ameritrade's API
     today = datetime.datetime.now()
     three_months_away = (today + relativedelta(months=+3))

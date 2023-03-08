@@ -16,7 +16,7 @@ https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwh
 """
 
 
-def run_vix_equation(ticker):
+def vix(ticker):
     """
     Runs the VIX equation on a ticker.
 
@@ -45,7 +45,10 @@ def run_vix_equation(ticker):
     # closest to the expiration dates of relevant SPX options. As such, the VIX calculation may
     # use different risk-free interest rates for near- and next-term options.
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 4)
-    r = scrape_3m_treasury_from_fred()
+    if ticker == '__TEST__':
+        r = 0.04
+    else:
+        r = scrape_3m_treasury_from_fred()
 
     # Step 4
     # Calculate T1 and T2, for near-term and next-term options respectively. See calculateT() in functions.py for more.
@@ -53,10 +56,10 @@ def run_vix_equation(ticker):
     t, tminutes = calculate_t(selected_chain)
 
     # Step 5
-    # Determine the forward SPX level, F, by identifying the strike price at which the
+    # Determine the forward SPX level, (used for F), by identifying the strike price at which the
     # absolute difference between the call and put prices is smallest
     # https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx (pg 5)
-    forward_level = calculate_forward_level(selected_chain)
+    forward_level = determine_forward_level_strike(selected_chain)
 
     # Step 6
     # Calculate F, where F is the: "forward SPX {but in our case, any ticker} level, by identifying the strike price at which the
@@ -75,7 +78,6 @@ def run_vix_equation(ticker):
 
     # Step 8
     # Calculate VIX
-
     minYear = 525600 # Minutes in year
     minMonth = 43200 # Minutes in 30 days
     v1 = vol['nearTerm']
@@ -84,22 +86,6 @@ def run_vix_equation(ticker):
     t2 = t['nextTerm']
     nT1 = tminutes['nearTerm']  # Minutes to expiration
     nT2 = tminutes['nextTerm']  # Minutes to expiration
-
-
-    # Test Data to confirm accuracy
-    # NT1 = number of minutes to settlement of the near-term options (12,960)
-    # NT2 = number of minutes to settlement of the next-term options (53,280)
-    # N30 = number of minutes in 30 days (30 × 1,440 = 43,200)
-    # N365 = number of minutes in a 365-day year (365 ×1,440 = 525,600
-
-    # minutesYear = 525600
-    # minutesMonth = 43200
-    # v1 = 0.4727679
-    # v2 = 0.3668180
-    # t1 = 0.0246575
-    # t2 = 0.1013699
-    # nT1 = 12960  # Minutes to expiration
-    # nT2 = 53280  # Minutes to expiration
 
     vix = 100 * math.sqrt(
         (t1 * v1 * ((nT2 - minMonth) / (nT2 - nT1)) + t2 * v2 * ((minMonth - nT1) / (nT2 - nT1))) * minYear / minMonth

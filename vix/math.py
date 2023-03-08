@@ -2,7 +2,7 @@ import datetime
 from pytz import timezone
 from math import e
 
-def calculate_t(selected_chain):
+def calculate_t(selected_chain: dict) -> tuple[dict, dict]:
     """
     T = {MCurrent day + MSettlement day + MOther days}/ Minutes in a year 
     https://www.optionseducation.org/referencelibrary/white-papers/page-assets/vixwhite.aspx
@@ -13,7 +13,7 @@ def calculate_t(selected_chain):
         'nextTerm': selected_chain['nextTerm']['call']['dateInfo']
     }
 
-    # Some variables we will need
+    # Some time variables we will need
     now = timezone('US/Central').localize(datetime.datetime.now())
     midnight = (now + datetime.timedelta(days=1)).replace(hour=0, minute=0)
     minutes_to_midnight = ((midnight - now).seconds / 60)  # MCurrentDay
@@ -32,7 +32,7 @@ def calculate_t(selected_chain):
     return t, tminutes
 
 
-def calculate_forward_level(selected_chain):
+def determine_forward_level_strike(selected_chain: dict) -> dict:
     """
     "Determine the forward SPX level, F, by identifying the strike price at which the
     absolute difference between the call and put prices is smallest."
@@ -87,7 +87,7 @@ def calculate_forward_level(selected_chain):
     return forwardLevel
     
 
-def calculate_f(t, r, forward_level):
+def calculate_f(t: dict, r: float, forward_level: dict) -> dict:
     """
     F = Strike Price + eRT × (Call Price – Put Price)
     "Determine the forward SPX level, F, by identifying the strike price at which the
