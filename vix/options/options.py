@@ -42,8 +42,6 @@ def determine_forward_level_strike(selected_chain: dict) -> dict:
                     
                 strikes[term][strike].append(details[0]['last'])
 
-    import pdb; pdb.set_trace()
-
     # Collect price differences from call and put options.
     for term, strike in strikes.items():
         for strike_price, prices in strike.items():
