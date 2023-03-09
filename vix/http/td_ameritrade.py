@@ -48,7 +48,7 @@ class TDAmeritrade:
             raise Exception('TDAmeritrade API Error: ', sys.exc_info())
 
     def return_sample_response(self):
-        txtfile = open('./sample_response/sample_td_response.json', "r")
+        txtfile = open('tests/fixtures/sample_td_spx_response.json', "r")
         return json.loads(txtfile.read())
 
     def __format_date(self, dates: list) -> tuple:

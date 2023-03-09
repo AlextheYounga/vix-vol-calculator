@@ -8,47 +8,40 @@ import sys
 
 class Expirations:
     def find_option_terms(self, chain: dict):
-        option_terms = self.__find_next_two_months_expirations(chain)
-        selected_chain = self.__calculate_nearest_option_of_option_groups(option_terms)
+        option_terms = self.__consolidate_option_terms(chain)
+        vix_expirations = self.__select_option_terms_from_vix_expiration_rules(option_terms)
+        selected_chain = self.__select_near_next_calls_and_puts(option_terms, vix_expirations)
 
         return selected_chain
 
-    def __find_next_two_months_expirations(self, chain: dict) -> dict:
-        """
-        Parse the option chain returned from TD Ameritrade.
 
-        Finds this month's expiration and next months expiration (the near-term and next-term expirations).
-        Calculates and returns a dict containing the near-term and next-term expiration dates, along with the
-        option chain for those dates. 
-        """
-
-        # Our container for collecting our near-term/next-term options
+    def __consolidate_option_terms(self, chain: dict) -> dict:
         option_terms = {}
-
         try:
-            for option_side in ['callExpDateMap', 'putExpDateMap']:  # Call and Put objects returned from TD Ameritrade
-                for expir, strikes in chain[option_side].items():  # Looping each side of the option chain, calls and puts
+            for option_side in ['callExpDateMap', 'putExpDateMap']:
+                for expiration, strikes in chain[option_side].items():  # Looping each side of the option chain, calls and puts
 
                     if (option_side not in option_terms):
                         option_terms[option_side] = {}
 
-                    # Option expiration date object
-                    datetime_safe_expiration = expir.split(':')[0]
-                    expiration_date = datetime.datetime.strptime(datetime_safe_expiration, '%Y-%m-%d')
-
                     # Grabbing the first strike row in the chain because I can get the precise expiration from any strike.
                     # TD Ameritrade adds the expiration date to every row
                     firstStrike = next(iter(strikes.values()))[0]
-                    daysToExpiration = int(firstStrike['daysToExpiration'])
+                    human_readable_expiration = expiration.split(':')[0] # Ex: "2023-03-09:1" Expiration with index (date:index)
+                    days_to_expiration = int(firstStrike['daysToExpiration'])
                     precise_expiration = int(firstStrike['expirationDate'])  # Getting precise expiration
+                    datetime_expiration = datetime.datetime.fromtimestamp(float(precise_expiration / 1000))
+                    date_timezone = timezone('US/Central').localize(datetime_expiration)
 
-                    if (daysToExpiration > 7):  # Must be at least 7 days from expiration, VIX rule.
+                    if (days_to_expiration > 7):  # Must be at least 7 days from expiration, VIX rule.
                         option_terms[option_side][precise_expiration] = {
                             'dateInfo': {
-                                'expirationDate': expiration_date,
-                                'month': expiration_date.month,
-                                'preciseExpiration': precise_expiration,
-                                'daysToExpiration': daysToExpiration,
+                                'expirationDate': human_readable_expiration,
+                                'month': datetime_expiration.month,
+                                'expirationTimestamp': precise_expiration,
+                                'daysToExpiration': days_to_expiration,
+                                'dateTimeExpiration': datetime_expiration,
+                                'dateTimeZone': date_timezone
                             },
                             'strikes': strikes
                         }
@@ -60,84 +53,61 @@ class Expirations:
 
         return option_terms
 
-    def __calculate_nearest_option_of_option_groups(self, option_terms: dict) -> dict:
+    
+    def __select_option_terms_from_vix_expiration_rules(self, option_terms: dict) -> dict:
         """
-        Calculating the nearest option of each group of options, 
+        The components of the VIX Index are near- and next-term put and call options with more than 23 days and less than 37 days to expiration.
+        These near- and next-term option expirations must have at least 7 days between them. This expiration rule does not cleanly apply to all assets 
+        because most stocks do not have as many option contracts as the S&P500. To allow this equation to be applied to *most stocks, I am extending the 
+        max possible next-term expiration to 3 months, although if there is a next-term expiration that is less than 37 days, that will be used instead.
+        """
+
+        vix_expirations = []
+
+        min_near_term_expiration_days = 23
+        hard_cuttoff_expiration_days = 90 # hard cutoff is 90 to allow for stocks other than S&P, but we will take less if we can
+
+        # Expiration dates are the same for calls and puts, just need to loop one of them.
+        for expiration, data in option_terms['callExpDateMap'].items():
+            days_to_expiration = data['dateInfo']['daysToExpiration']
+
+            # Rules: 
+            # 1. Must be at least 23 days from expiration
+            # 2. Preferred to be less than 37 days from expiration
+            # 3. Must be at least 7 days between near-term and next-term expiration
+            # 4. Hard cutoff is less than 90 days from expiration. (My rule, not VIX rule)
+            if ((days_to_expiration >= min_near_term_expiration_days) and 
+                (days_to_expiration <= hard_cuttoff_expiration_days) and
+                (expiration not in [e[0] for e in vix_expirations])):
+
+                if (len(vix_expirations) > 0):
+                    last_expiration_days = vix_expirations[-1][1]
+
+                    if (days_to_expiration - last_expiration_days >= 7):
+                        vix_expirations.append([expiration, days_to_expiration])    
+                        break
+                    else:
+                        continue
+
+                vix_expirations.append([expiration, days_to_expiration])
+
+        return {'nearTerm': vix_expirations[0][0], 'nextTerm': vix_expirations[1][0]}
+        
+
+    
+    def __select_near_next_calls_and_puts(self, option_terms: dict, vix_expirations: dict) -> dict:
+        """
+        Finding the nearest option of each group of options, 
         finding min() value of each group's keys, which are the time to expiration in seconds.
         """
-        proper_expiration = self.__vix_expiration_rules(option_terms)
 
         selected_chain = {}
         for term in ['nearTerm', 'nextTerm']:
             # Selecting the proper calls and puts from option dictionary.
             selected_chain[term] = {
-                'call': option_terms['callExpDateMap'][proper_expiration[term]],
-                'put': option_terms['putExpDateMap'][proper_expiration[term]],
+                'call': option_terms['callExpDateMap'][vix_expirations[term]],
+                'put': option_terms['putExpDateMap'][vix_expirations[term]],
             }
-
-        # Date timezone manipulation; doing here because we'll need these later.
-        for term, side in selected_chain.items():
-            for k, data in side.items():
-                t = data['dateInfo']['preciseExpiration']  # TD Ameritrade object
-                dateT = datetime.datetime.fromtimestamp(float(t / 1000))  # Windows workaround
-                # The previous division by 1000 is simply a workaround for Windows. Windows doesn't seem to play nice
-                # with timestamps in miliseconds.
-                dateTzObj = timezone('US/Central').localize(dateT)  # Converting to Chicago timezone
-                dateStr = dateTzObj.strftime('%Y-%m-%d')
-
-                selected_chain[term][k]['dateInfo']['dateTzObj'] = dateTzObj
-                selected_chain[term][k]['dateInfo']['dateStr'] = dateStr
 
         return selected_chain
 
-    def __vix_expiration_rules(self, option_terms: dict) -> dict:
-        """
-        For SPX, the VIX specifies that the next-term options can be no longer than *2 months away. This time range doesn't
-        work for all stocks, because not all stocks have option expirations each month. Some have expirations every 3 months, some every 6 months. 
-        This caused me some trouble when I originally built this, so I have extended the max time period outwards to 3 months. Unfortunately, at the
-        moment, this equation won't support any stock that doesn't have expirations in the coming 3 months.
-        """
-        today = datetime.datetime.now()
-        this_month = today.month
-        next_month = (today + relativedelta(months=+1))
-        two_months_away = (today + relativedelta(months=+2))
-        three_months_away = (today + relativedelta(months=+3))
-
-        month_0 = []
-        month_1 = []
-        month_2 = []
-        month_3 = []
-
-        for _side, option in option_terms.items():
-            for exp, data in option.items():
-                if (data['dateInfo']['month'] == this_month):
-                    month_0.append(exp)
-                if (data['dateInfo']['month'] == next_month.month):
-                    month_1.append(exp)
-                if (data['dateInfo']['month'] == two_months_away.month):
-                    month_3.append(exp)
-                if (data['dateInfo']['month'] == three_months_away.month):
-                    month_3.append(exp)
-
-        if (len(month_0) != 0):
-            nearTermExp = min(month_0)
-            flat_list = [item for sublist in [month_1, month_2, month_3] for item in sublist]
-            if (len(flat_list) > 0):
-                nextTermExp = min(flat_list)
-                return {'nearTerm': nearTermExp, 'nextTerm': nextTermExp}
-            
-        if (len(month_1) != 0):
-            nearTermExp = min(month_1)
-            flat_list = [item for sublist in [month_2, month_3] for item in sublist]
-            if (len(flat_list) > 0):
-                nextTermExp = min(flat_list)
-                return {'nearTerm': nearTermExp, 'nextTerm': nextTermExp}
-            
-        if (len(month_2) != 0):
-            nearTermExp = min(month_2)
-            if (len(month_3) > 0):
-                nextTermExp = min(month_3)
-                return {'nearTerm': nearTermExp, 'nextTerm': nextTermExp}
-
-        # If not enough option data, end program. We can go no further.
-        raise Exception('Not enough option data for ticker to make a useful measurement.')

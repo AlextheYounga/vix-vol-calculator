@@ -8,3 +8,4 @@ tabulate
 python-dateutil
 beautifulsoup4
 pytest
+pandas

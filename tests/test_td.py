@@ -5,7 +5,7 @@ import json
 UPDATE_SAMPLE = False
 
 def _save_response_as_example(chain):
-    path = 'tests/sample_response/sample_td_response.json'
+    path = 'tests/fixtures/sample_td_spx_response.json'
     with open(path, 'w') as json_file:
         json.dump(chain, json_file)
 
