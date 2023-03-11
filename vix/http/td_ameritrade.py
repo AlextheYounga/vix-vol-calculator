@@ -8,6 +8,8 @@ load_dotenv()
 
 
 class TDAmeritrade:
+    SAVE_RESPONSES=True
+    
     def get_option_chain(self, ticker: str, time_range: list) -> dict:
         """
         Fetches the option chain (calls and puts), for a ticker from TD Ameritrade.
@@ -41,6 +43,7 @@ class TDAmeritrade:
             response.raise_for_status()
             chain = response.json()
             if isinstance(chain, dict):
+                self.save_response(chain, ticker)
                 return chain
             else:
                 raise Exception('Error in getOptionChain(). Response is not a dict.')
@@ -50,6 +53,14 @@ class TDAmeritrade:
     def return_sample_response(self):
         txtfile = open('tests/fixtures/sample_td_spx_response.json', "r")
         return json.loads(txtfile.read())
+    
+    def save_response(self, chain: dict, ticker: str) -> None:
+        formatted_ticker = ticker.replace('.', '_').lower()
+        file = f'storage/td_{formatted_ticker}_chain.json'
+        if self.SAVE_RESPONSES and not os.path.exists(file):
+            with open(file, 'w') as outfile:
+                json.dump(chain, outfile)
+
 
     def __format_date(self, dates: list) -> tuple:
         results = []

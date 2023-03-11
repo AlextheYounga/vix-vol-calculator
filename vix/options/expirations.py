@@ -65,33 +65,38 @@ class Expirations:
         vix_expirations = []
 
         min_near_term_expiration_days = 23
-        hard_cuttoff_expiration_days = 90 # hard cutoff is 90 to allow for stocks other than S&P, but we will take less if we can
+        hard_cuttoff_expiration_days = 120 # hard cutoff is 120 days to allow for stocks other than S&P, but we will take less if we can
 
         # Expiration dates are the same for calls and puts, just need to loop one of them.
-        for expiration, data in option_terms['callExpDateMap'].items():
-            days_to_expiration = data['dateInfo']['daysToExpiration']
+        try: 
+            for expiration, data in option_terms['callExpDateMap'].items():
+                days_to_expiration = data['dateInfo']['daysToExpiration']
+                # Rules: 
+                # 1. Must be at least 23 days from expiration
+                # 2. Preferred to be less than 37 days from expiration
+                # 3. Must be at least 7 days between near-term and next-term expiration
+                # 4. Hard cutoff is less than 120 days from expiration. (My rule, not VIX rule)
+                if ((days_to_expiration >= min_near_term_expiration_days) and 
+                    (days_to_expiration <= hard_cuttoff_expiration_days) and
+                    (expiration not in [e[0] for e in vix_expirations])):
+                    
+                    if (len(vix_expirations) > 0):
+                        last_expiration_days = vix_expirations[-1][1]
 
-            # Rules: 
-            # 1. Must be at least 23 days from expiration
-            # 2. Preferred to be less than 37 days from expiration
-            # 3. Must be at least 7 days between near-term and next-term expiration
-            # 4. Hard cutoff is less than 90 days from expiration. (My rule, not VIX rule)
-            if ((days_to_expiration >= min_near_term_expiration_days) and 
-                (days_to_expiration <= hard_cuttoff_expiration_days) and
-                (expiration not in [e[0] for e in vix_expirations])):
+                        if (days_to_expiration - last_expiration_days >= 7):
+                            vix_expirations.append([expiration, days_to_expiration])    
+                            break
+                        else:
+                            continue
 
-                if (len(vix_expirations) > 0):
-                    last_expiration_days = vix_expirations[-1][1]
+                    vix_expirations.append([expiration, days_to_expiration])
 
-                    if (days_to_expiration - last_expiration_days >= 7):
-                        vix_expirations.append([expiration, days_to_expiration])    
-                        break
-                    else:
-                        continue
-
-                vix_expirations.append([expiration, days_to_expiration])
-
-        return {'nearTerm': vix_expirations[0][0], 'nextTerm': vix_expirations[1][0]}
+            return {'nearTerm': vix_expirations[0][0], 'nextTerm': vix_expirations[1][0]}
+        except:
+            raise Exception(
+                'This ticker does not have enough option contracts to calculate the VIX Index.',
+                sys.exc_info()
+            )
         
 
     
