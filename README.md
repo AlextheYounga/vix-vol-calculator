@@ -3,7 +3,7 @@
 ![Screenshot 2022-12-08 at 4 45 50 PM](https://user-images.githubusercontent.com/20220366/206574035-3b5ab371-cede-4d21-afb1-c7f69676adc2.png)
 
 ## October 2023 Update: TD Ameritrade being lame
-This equation is built upon the TD Ameritrade API, which has put accepting new API registrations on hold as they migrate over to a Charles Schwab API. I am not looking forward to rewriting the code to parse ~10MB option chain responses, but I will.
+This repo is built upon the TD Ameritrade API, which has put accepting new API registrations on hold as they migrate over to a Charles Schwab API. I am not looking forward to rewriting the code to parse ~10MB option chain responses, but I will.
 
 I am looking for alternative sources for this as I begin converting this repo into a pip package. I'm not entirely confident Schwab will be as cool as TD Ameritrade was in letting basically anyone ping their servers for 10MB responses with virtually no limit.
 
@@ -21,6 +21,7 @@ Please check back later. I am actively working on this.
       - [Apple](#apple)
       - [Shopify](#shopify)
       - [Microsoft](#microsoft)
+  - [Caching](#caching)
   - [Getting Started:](#getting-started)
     - [Beginners: Installing Python, (the right way)](#beginners-installing-python-the-right-way)
     - [Step 1 Free TD Ameritrade API Key (Deprecated):](#step-1-free-td-ameritrade-api-key-deprecated)
@@ -78,6 +79,14 @@ python run.py vix SHOP
 python run.py vix MSFT
 => VIX: 26.89
 ```
+
+## Caching
+Option chain responses are unusually large- ~10MB json response for every requested ticker. To help save resources, I automatically cache the chain response for one day. You can turn this off if you need perfectly accurate responses to the second, by setting `Vix(enable_caching=false)`. As I convert this to a pip package, this will be one of the options users can easily pass in the params. 
+
+I also scrape the current 3m treasury rate from the Federal Reserve's website and cache this rate for one day, but this datapoint is only updated daily anyway. 
+
+These are stored under `storage/cache/`
+
 
 ## Getting Started:
 ### Beginners: Installing Python, (the right way)
