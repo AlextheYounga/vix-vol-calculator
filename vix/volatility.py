@@ -102,12 +102,12 @@ class Volatility:
         vix_chain = []
         for side, strikes in ks.items():
             for strike, data in strikes.items():
+                
                 if (side == 'call'):
-                    if ((strike < k0) or (strike > bounds['call'])):
-                        continue
+                    if ((strike < k0) or (strike > bounds['call'])): continue
                 if (side == 'put'):
-                    if ((strike > k0) or (strike < bounds['put'])):
-                        continue
+                    if ((strike > k0) or (strike < bounds['put'])): continue
+
                 ki = {
                     'side': side,
                     'strike': strike,

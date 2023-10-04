@@ -1,8 +1,5 @@
 import datetime
 from pytz import timezone
-from dateutil.relativedelta import relativedelta
-import colored
-from colored import stylize
 import sys
 
 
@@ -45,12 +42,9 @@ class Expirations:
                             },
                             'strikes': strikes
                         }
-        except:
-            raise Exception(
-                'There has been a change in the TD Ameritrade API. See __find_next_two_months_expirations()',
-                sys.exc_info()
-            )
-
+        except Exception as e:
+            raise Exception('There has been a change in the TD Ameritrade API. See __find_next_two_months_expirations()', e)
+        
         return option_terms
 
     

@@ -7,9 +7,11 @@ settings.json
 __pycache__
 db.sqlite3
 deprecated
+__deprecated__
 .DS_Store
 storage/**
 !storage/.gitkeep
+.pep8
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python

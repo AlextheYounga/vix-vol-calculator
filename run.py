@@ -1,17 +1,25 @@
 import sys
-import colored
-from colored import stylize
+import os
 from dotenv import load_dotenv
 load_dotenv()
 
 # This is some code I reuse for any scripting projects I have.
-# It's probably too complex for a project with only one command but it works.
+# It's probably too complex for a project with only one command but it works...
+
 
 def vix_controller(args):
-    from vix.vix import vix
-
+    from vix.vix import Vix
+    key = os.environ.get("TDAMER_KEY")
     ticker = args[0]
-    print('VIX: '+str(vix(ticker)))
+
+    vixvol = Vix(
+        td_api_key=key,
+        debug=False,
+        caching_enabled=True
+    )
+
+    vix = vixvol.calculate(ticker)
+    print('VIX: ' + str(vix))
 
 
 def main():
